@@ -1,0 +1,148 @@
+Name-Yuvraj Osari
+Roll no. - 23T3080
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Student {
+    int id;
+    string name;
+    float grade;
+    Student* left;
+    Student* right;
+};
+
+class StudentManagement {
+public:
+    StudentManagement() : root(nullptr) {}
+
+    void insert(int id, const string& name, float grade) {
+        root = insertRec(root, id, name, grade);
+    }
+
+    void search(int id) {
+        Student* student = searchRec(root, id);
+        if (student) {
+            cout << "Student found: " << student->id << ", " << student->name << ", " << student->grade << endl;
+        } else {
+            cout << "Student not found." << endl;
+        }
+    }
+
+    void update(int id, const string& name, float grade) {
+        Student* student = searchRec(root, id);
+        if (student) {
+            student->name = name;
+            student->grade = grade;
+            cout << "Student updated." << endl;
+        } else {
+            cout << "Student not found." << endl;
+        }
+    }
+
+    void remove(int id) {
+        root = deleteRec(root, id);
+    }
+
+    void inOrder() {
+        inOrderRec(root);
+    }
+
+private:
+    Student* root;
+
+    Student* createNode(int id, const string& name, float grade) {
+        Student* newNode = new Student();
+        newNode->id = id;
+        newNode->name = name;
+        newNode->grade = grade;
+        newNode->left = newNode->right = nullptr;
+        return newNode;
+    }
+
+    Student* insertRec(Student* node, int id, const string& name, float grade) {
+        if (node == nullptr) {
+            return createNode(id, name, grade);
+        }
+        if (id < node->id) {
+            node->left = insertRec(node->left, id, name, grade);
+        } else if (id > node->id) {
+            node->right = insertRec(node->right, id, name, grade);
+        }
+        return node;
+    }
+
+    Student* searchRec(Student* node, int id) {
+        if (node == nullptr || node->id == id) {
+            return node;
+        }
+        if (id < node->id) {
+            return searchRec(node->left, id);
+        }
+        return searchRec(node->right, id);
+    }
+
+    Student* deleteRec(Student* root, int id) {
+        if (root == nullptr) return root;
+        if (id < root->id) {
+            root->left = deleteRec(root->left, id);
+        } else if (id > root->id) {
+            root->right = deleteRec(root->right, id);
+        } else {
+            if (root->left == nullptr) {
+                Student* temp = root->right;
+                delete root;
+                return temp;
+            } else if (root->right == nullptr) {
+                Student* temp = root->left;
+                delete root;
+                return temp;
+            }
+
+            Student* temp = minValueNode(root->right);
+            root->id = temp->id;
+            root->name = temp->name;
+            root->grade = temp->grade;
+            root->right = deleteRec(root->right, temp->id);
+        }
+        return root;
+    }
+
+    Student* minValueNode(Student* node) {
+        Student* current = node;
+        while (current && current->left != nullptr)
+            current = current->left;
+        return current;
+    }
+
+    void inOrderRec(Student* root) {
+        if (root != nullptr) {
+            inOrderRec(root->left);
+            cout << root->id << ", " << root->name << ", " << root->grade << endl;
+            inOrderRec(root->right);
+        }
+    }
+};
+
+int main() {
+    StudentManagement sm;
+    sm.insert(1, "John Doe", 85.5);
+    sm.insert(2, "Jane Smith", 90.0);
+    sm.insert(3, "Emily Davis", 78.0);
+
+    cout << "In-order Traversal: " << endl;
+    sm.inOrder();
+
+    cout << "Searching for student with ID 2: " << endl;
+    sm.search(2);
+
+    cout << "Updating student with ID 2: " << endl;
+    sm.update(2, "Jane Doe", 95.0);
+    sm.search(2);
+
+    cout << "Deleting student with ID 1: " << endl;
+    sm.remove(1);
+    sm.inOrder();
+
+    return 0;
+}
